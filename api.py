@@ -477,9 +477,17 @@ def update_order_status(order_id):
                         "message": "Avval buyurtmani qabul qiling"
                     }), 409
 
+            # Yetkazilgan buyurtmani qayta hisoblamaslik
+            if new_status == "Yetkazildi" and order.get("status") == "Yetkazildi":
+                return jsonify({
+                    "success": True,
+                    "message": "Buyurtma allaqachon yetkazilgan",
+                    "order": order
+                })
+
             order["status"] = new_status
 
-            # Yetkazilganda kuryer statistikasini oshiramiz
+            # Faqat birinchi marta Yetkazildi bo'lganda statistika oshadi
             if new_status == "Yetkazildi":
 
                 cid = order.get("courier_id")
@@ -489,28 +497,16 @@ def update_order_status(order_id):
                     if courier.get("id") == cid:
 
                         courier["completed_orders"] = (
-                            int(
-                                courier.get(
-                                    "completed_orders",
-                                    0
-                                )
-                            ) + 1
+                            int(courier.get("completed_orders", 0)) + 1
                         )
 
                         try:
-                            total = int(
-                                order.get("total", 0)
-                            )
+                            total = int(order.get("total", 0))
                         except (TypeError, ValueError):
                             total = 0
 
                         courier["balance"] = (
-                            int(
-                                courier.get(
-                                    "balance",
-                                    0
-                                )
-                            ) + total
+                            int(courier.get("balance", 0)) + total
                         )
 
                         break

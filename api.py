@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 import os
 from flask_cors import CORS
-from database import load_data, save_data
+from database import load_data, save_data, accept_order_atomic
 from config import PORT
 
 app = Flask(__name__)
@@ -372,10 +372,7 @@ def orders():
 @app.route("/order/<int:order_id>/accept", methods=["POST"])
 def accept_order(order_id):
 
-    data = load_data()
-
     req = request.get_json(silent=True) or {}
-
     courier_id = req.get("courier_id")
 
     try:
@@ -386,68 +383,35 @@ def accept_order(order_id):
             "message": "courier_id kerak"
         }), 400
 
-    courier = None
+    try:
+        result = accept_order_atomic(order_id, courier_id)
 
-    for c in data.get("couriers", []):
+        if result.get("success"):
+            return jsonify(result)
 
-        if c.get("id") == courier_id:
-            courier = c
-            break
+        message = result.get(
+            "message",
+            "Buyurtmani qabul qilib bo'lmadi"
+        )
 
-    if courier is None:
+        if message == "Kuryer topilmadi":
+            code = 404
+        elif message == "Kuryer offline":
+            code = 400
+        elif message == "Buyurtma topilmadi":
+            code = 404
+        else:
+            code = 409
+
+        return jsonify(result), code
+
+    except Exception as e:
         return jsonify({
             "success": False,
-            "message": "Kuryer topilmadi"
-        }), 404
+            "message": "Server xatosi",
+            "error": str(e)
+        }), 500
 
-    if not courier.get("online", False):
-        return jsonify({
-            "success": False,
-            "message": "Kuryer offline"
-        }), 400
-
-    for order in data.get("orders", []):
-
-        if order.get("id") == order_id:
-
-            # Eng muhim himoya:
-            # Zakazni birinchi olgan kuryer yutadi.
-            if order.get("courier_id") is not None:
-
-                return jsonify({
-                    "success": False,
-                    "message": "Bu buyurtma allaqachon boshqa kuryer tomonidan olindi",
-                    "order": order
-                }), 409
-
-            if order.get("status") != "Yangi":
-
-                return jsonify({
-                    "success": False,
-                    "message": "Bu buyurtma endi mavjud emas",
-                    "order": order
-                }), 409
-
-            order["courier_id"] = courier_id
-            order["status"] = "Yo‘lda"
-
-            save_data(data)
-
-            return jsonify({
-                "success": True,
-                "message": "Buyurtma sizga biriktirildi",
-                "order": order
-            })
-
-    return jsonify({
-        "success": False,
-        "message": "Buyurtma topilmadi"
-    }), 404
-
-
-# =====================================================
-# UPDATE ORDER STATUS
-# =====================================================
 
 @app.route("/order/<int:order_id>/status", methods=["POST"])
 def update_order_status(order_id):

@@ -413,3 +413,107 @@ def save_data(data):
 
     finally:
         conn.close()
+def accept_order_atomic(order_id, courier_id):
+    """
+    Buyurtmani faqat birinchi kuryerga atomik tarzda biriktiradi.
+    Ikkinchi kuryer bir vaqtning o'zida urinsa, buyurtma allaqachon olingan bo'ladi.
+    """
+
+    if not DATABASE_URL:
+        return {
+            "success": False,
+            "message": "DATABASE_URL mavjud emas"
+        }
+
+    init_db()
+
+    conn = get_connection()
+
+    try:
+        cur = conn.cursor()
+
+        # Kuryer online ekanini tekshirish
+        cur.execute("""
+            SELECT id, name, phone, online, balance, completed_orders
+            FROM couriers
+            WHERE id = %s
+        """, (courier_id,))
+
+        courier_row = cur.fetchone()
+
+        if courier_row is None:
+            conn.rollback()
+            return {
+                "success": False,
+                "message": "Kuryer topilmadi"
+            }
+
+        if not courier_row[3]:
+            conn.rollback()
+            return {
+                "success": False,
+                "message": "Kuryer offline"
+            }
+
+        # Eng muhim qism:
+        # Faqat Yangi va courier_id NULL bo'lgan buyurtmani o'zgartiramiz.
+        cur.execute("""
+            UPDATE orders
+            SET data = jsonb_set(
+                jsonb_set(
+                    data,
+                    '{courier_id}',
+                    to_jsonb(%s::integer)
+                ),
+                '{status}',
+                '"Yo‘lda"'::jsonb
+            )
+            WHERE id = %s
+              AND data->>'status' = 'Yangi'
+              AND data->>'courier_id' IS NULL
+            RETURNING data
+        """, (
+            courier_id,
+            order_id
+        ))
+
+        row = cur.fetchone()
+
+        if row is None:
+            conn.rollback()
+
+            # Buyurtma mavjudligini tekshiramiz
+            cur.execute("""
+                SELECT data
+                FROM orders
+                WHERE id = %s
+            """, (order_id,))
+
+            existing = cur.fetchone()
+
+            if existing is None:
+                return {
+                    "success": False,
+                    "message": "Buyurtma topilmadi"
+                }
+
+            return {
+                "success": False,
+                "message": "Bu buyurtma allaqachon boshqa kuryer tomonidan olindi",
+                "order": existing[0]
+            }
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "Buyurtma sizga biriktirildi",
+            "order": row[0]
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()

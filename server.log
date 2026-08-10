@@ -1,0 +1,10 @@
+FastFood Server ishga tushdi...
+ * Serving Flask app 'api'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.221.174.1:8080
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [10/Aug/2026 15:25:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [10/Aug/2026 15:25:36] "GET /orders?courier_id=1 HTTP/1.1" 200 -

@@ -1,13 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 import os
 from flask_cors import CORS
-from database import (
-    load_data,
-    save_data,
-    accept_order_atomic,
-    get_courier_commission,
-    set_courier_commission
-)
+from database import load_data, save_data
 from config import PORT
 
 app = Flask(__name__)
@@ -371,68 +365,6 @@ def orders():
     })
 
 
-
-# =====================================================
-# COURIER COMMISSION SETTINGS
-# =====================================================
-
-@app.route("/settings/courier-commission", methods=["GET"])
-def get_courier_commission_api():
-
-    try:
-        percent = get_courier_commission()
-
-        return jsonify({
-            "success": True,
-            "commission": percent
-        })
-
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": "Sozlamani olishda xatolik",
-            "error": str(e)
-        }), 500
-
-
-@app.route("/settings/courier-commission", methods=["POST"])
-def set_courier_commission_api():
-
-    req = request.get_json(silent=True) or {}
-
-    value = req.get("commission")
-
-    try:
-        percent = int(value)
-    except (TypeError, ValueError):
-        return jsonify({
-            "success": False,
-            "message": "Foiz noto'g'ri"
-        }), 400
-
-    if percent < 0 or percent > 100:
-        return jsonify({
-            "success": False,
-            "message": "Foiz 0 dan 100 gacha bo'lishi kerak"
-        }), 400
-
-    try:
-        set_courier_commission(percent)
-
-        return jsonify({
-            "success": True,
-            "commission": percent,
-            "message": "Kuryer foizi saqlandi"
-        })
-
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": "Foizni saqlashda xatolik",
-            "error": str(e)
-        }), 500
-
-
 # =====================================================
 # ACCEPT ORDER
 # =====================================================
@@ -440,7 +372,10 @@ def set_courier_commission_api():
 @app.route("/order/<int:order_id>/accept", methods=["POST"])
 def accept_order(order_id):
 
+    data = load_data()
+
     req = request.get_json(silent=True) or {}
+
     courier_id = req.get("courier_id")
 
     try:
@@ -451,35 +386,68 @@ def accept_order(order_id):
             "message": "courier_id kerak"
         }), 400
 
-    try:
-        result = accept_order_atomic(order_id, courier_id)
+    courier = None
 
-        if result.get("success"):
-            return jsonify(result)
+    for c in data.get("couriers", []):
 
-        message = result.get(
-            "message",
-            "Buyurtmani qabul qilib bo'lmadi"
-        )
+        if c.get("id") == courier_id:
+            courier = c
+            break
 
-        if message == "Kuryer topilmadi":
-            code = 404
-        elif message == "Kuryer offline":
-            code = 400
-        elif message == "Buyurtma topilmadi":
-            code = 404
-        else:
-            code = 409
-
-        return jsonify(result), code
-
-    except Exception as e:
+    if courier is None:
         return jsonify({
             "success": False,
-            "message": "Server xatosi",
-            "error": str(e)
-        }), 500
+            "message": "Kuryer topilmadi"
+        }), 404
 
+    if not courier.get("online", False):
+        return jsonify({
+            "success": False,
+            "message": "Kuryer offline"
+        }), 400
+
+    for order in data.get("orders", []):
+
+        if order.get("id") == order_id:
+
+            # Eng muhim himoya:
+            # Zakazni birinchi olgan kuryer yutadi.
+            if order.get("courier_id") is not None:
+
+                return jsonify({
+                    "success": False,
+                    "message": "Bu buyurtma allaqachon boshqa kuryer tomonidan olindi",
+                    "order": order
+                }), 409
+
+            if order.get("status") != "Yangi":
+
+                return jsonify({
+                    "success": False,
+                    "message": "Bu buyurtma endi mavjud emas",
+                    "order": order
+                }), 409
+
+            order["courier_id"] = courier_id
+            order["status"] = "Yo‘lda"
+
+            save_data(data)
+
+            return jsonify({
+                "success": True,
+                "message": "Buyurtma sizga biriktirildi",
+                "order": order
+            })
+
+    return jsonify({
+        "success": False,
+        "message": "Buyurtma topilmadi"
+    }), 404
+
+
+# =====================================================
+# UPDATE ORDER STATUS
+# =====================================================
 
 @app.route("/order/<int:order_id>/status", methods=["POST"])
 def update_order_status(order_id):
@@ -545,17 +513,9 @@ def update_order_status(order_id):
                         "message": "Avval buyurtmani qabul qiling"
                     }), 409
 
-            # Yetkazilgan buyurtmani qayta hisoblamaslik
-            if new_status == "Yetkazildi" and order.get("status") == "Yetkazildi":
-                return jsonify({
-                    "success": True,
-                    "message": "Buyurtma allaqachon yetkazilgan",
-                    "order": order
-                })
-
             order["status"] = new_status
 
-            # Faqat birinchi marta Yetkazildi bo'lganda statistika oshadi
+            # Yetkazilganda kuryer statistikasini oshiramiz
             if new_status == "Yetkazildi":
 
                 cid = order.get("courier_id")
@@ -565,20 +525,28 @@ def update_order_status(order_id):
                     if courier.get("id") == cid:
 
                         courier["completed_orders"] = (
-                            int(courier.get("completed_orders", 0)) + 1
+                            int(
+                                courier.get(
+                                    "completed_orders",
+                                    0
+                                )
+                            ) + 1
                         )
 
                         try:
-                            total = int(order.get("total", 0))
+                            total = int(
+                                order.get("total", 0)
+                            )
                         except (TypeError, ValueError):
                             total = 0
 
-                        # Kuryer daromadi: Admin belgilagan foiz
-                        commission = get_courier_commission()
-                        courier_income = total * commission // 100
-
                         courier["balance"] = (
-                            int(courier.get("balance", 0)) + courier_income
+                            int(
+                                courier.get(
+                                    "balance",
+                                    0
+                                )
+                            ) + total
                         )
 
                         break

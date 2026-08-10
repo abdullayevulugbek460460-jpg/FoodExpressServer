@@ -413,6 +413,89 @@ def save_data(data):
 
     finally:
         conn.close()
+
+def get_courier_commission():
+    """Admin panel uchun kuryer komissiya foizini olish."""
+    if not DATABASE_URL:
+        return 10
+
+    init_db()
+    conn = get_connection()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS app_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        """)
+
+        cur.execute("""
+            INSERT INTO app_settings (key, value)
+            VALUES ('courier_commission', '10')
+            ON CONFLICT (key) DO NOTHING
+        """)
+
+        cur.execute("""
+            SELECT value
+            FROM app_settings
+            WHERE key = 'courier_commission'
+        """)
+
+        row = cur.fetchone()
+        conn.commit()
+
+        try:
+            return max(0, min(100, int(row[0]))) if row else 10
+        except (TypeError, ValueError):
+            return 10
+
+    finally:
+        conn.close()
+
+
+def set_courier_commission(percent):
+    """Admin panel kiritgan kuryer komissiya foizini saqlash."""
+    percent = int(percent)
+
+    if percent < 0 or percent > 100:
+        raise ValueError("Foiz 0 dan 100 gacha bo'lishi kerak")
+
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL mavjud emas")
+
+    init_db()
+    conn = get_connection()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS app_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        """)
+
+        cur.execute("""
+            INSERT INTO app_settings (key, value)
+            VALUES ('courier_commission', %s)
+            ON CONFLICT (key)
+            DO UPDATE SET value = EXCLUDED.value
+        """, (str(percent),))
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
 def accept_order_atomic(order_id, courier_id):
     """
     Buyurtmani faqat birinchi kuryerga atomik tarzda biriktiradi.

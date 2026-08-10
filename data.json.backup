@@ -1,0 +1,422 @@
+{
+    "menu": [
+        {
+            "id": 1,
+            "name": "🍔 Classic Burger",
+            "price": 35000
+        },
+        {
+            "id": 2,
+            "name": "🌯 Lavash",
+            "price": 35000
+        },
+        {
+            "id": 3,
+            "name": "🍕 Pizza",
+            "price": 50000
+        },
+        {
+            "id": 4,
+            "name": "🥤 Cola",
+            "price": 12000
+        },
+        {
+            "id": 5,
+            "name": "🥤 Fanta",
+            "price": 12000
+        },
+        {
+            "id": 6,
+            "name": "🥤 Sprite",
+            "price": 12000
+        },
+        {
+            "id": 7,
+            "name": "🍟Kartoshka fri",
+            "price": 15000
+        },
+        {
+            "id": 8,
+            "name": "🌭HotDog",
+            "price": 15000
+        },
+        {
+            "id": 9,
+            "name": "☕️ Kofe",
+            "price": 10000
+        },
+        {
+            "id": 10,
+            "name": "🥛 Kokteyl",
+            "price": 15000
+        }
+    ],
+    "orders": [
+        {
+            "name": "Test",
+            "phone": "901234567",
+            "items": {
+                "Classic Burger": 2
+            },
+            "total": 50000,
+            "id": 1,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ulugbek",
+            "phone": "942167715",
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 2,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ulu",
+            "phone": "942167715",
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 3,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ulu",
+            "phone": "942167715",
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 4,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "sushs",
+            "phone": "7676767",
+            "address": "shshhs",
+            "note": "shhshs",
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 5,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ghhh",
+            "phone": "6666",
+            "address": "hgh",
+            "note": "ghy",
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 6,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "gshs",
+            "phone": "767997",
+            "address": "zvzvs",
+            "note": "",
+            "items": {
+                "🍔 Classic Burger": 2
+            },
+            "total": 50000,
+            "id": 7,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "Ulugbek",
+            "phone": "+998942167715",
+            "address": "Ipak yoli ziroatchi 365 uy",
+            "note": "",
+            "items": {
+                "🍕 Pizza": 1
+            },
+            "total": 45000,
+            "id": 8,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "Asal",
+            "phone": "+998902005050",
+            "address": "xojaobod",
+            "note": "",
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 9,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ooo",
+            "phone": "99999999",
+            "address": "hhhh",
+            "note": "",
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 10,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ghhh",
+            "phone": "3333333",
+            "address": "hhuuhuuu",
+            "note": "",
+            "items": {
+                "🍕 Pizza": 1
+            },
+            "total": 45000,
+            "id": 11,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ggg",
+            "phone": "6666",
+            "address": "gggg",
+            "note": "",
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 12,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ppp",
+            "phone": "999",
+            "address": "ppp",
+            "note": "",
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 13,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "bzbabab",
+            "phone": "79497979",
+            "address": "vavavavav",
+            "note": "",
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 14,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ooooooo",
+            "phone": "000000",
+            "address": "0000000",
+            "note": "",
+            "items": {
+                "🍕 Pizza": 1
+            },
+            "total": 45000,
+            "id": 15,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "hhhh",
+            "phone": "666666",
+            "address": "ggggg",
+            "note": "",
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 16,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "hhh",
+            "phone": "6666",
+            "address": "gggg",
+            "note": "",
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 17,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "hhhhh",
+            "phone": "9996",
+            "address": "ggghh",
+            "note": "",
+            "items": {
+                "🍔 Classic Burger": 2
+            },
+            "total": 50000,
+            "id": 18,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "hhhh",
+            "phone": "9999",
+            "address": "GPS: 40.60012123333333, 72.71485991666667",
+            "note": "",
+            "latitude": 40.60012123333333,
+            "longitude": 72.71485991666667,
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 19,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ulugbek",
+            "phone": "942167715",
+            "address": "GPS: 40.60019306666666, 72.7147376",
+            "note": "",
+            "latitude": 40.60019306666666,
+            "longitude": 72.7147376,
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 20,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "jjj",
+            "phone": "9666",
+            "address": "GPS: 40.6001735, 72.71475001666666",
+            "note": "",
+            "latitude": 40.6001735,
+            "longitude": 72.71475001666666,
+            "items": {
+                "🍔 Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 21,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "shshs",
+            "phone": "6464646",
+            "address": "GPS: 40.6001735, 72.71475001666666",
+            "note": "",
+            "latitude": 40.6001735,
+            "longitude": 72.71475001666666,
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 28000,
+            "id": 22,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "ulugbek",
+            "phone": "2167715",
+            "address": "GPS: 40.6001735, 72.71475001666666",
+            "note": "",
+            "latitude": 40.6001735,
+            "longitude": 72.71475001666666,
+            "items": {
+                "🌯 Lavash": 1,
+                "🍕 Pizza": 1,
+                "🥤 Cola": 1,
+                "🥤 Fanta": 1,
+                "🥤 Sprite": 1,
+                "🍟Kartoshka fri": 1,
+                "🍔 Classic Burger": 1
+            },
+            "total": 171000,
+            "id": 23,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "hshs",
+            "phone": "794646644",
+            "address": "GPS: 40.6001735, 72.71475001666666",
+            "note": "",
+            "latitude": 40.6001735,
+            "longitude": 72.71475001666666,
+            "items": {
+                "🌭HotDog": 1,
+                "🍟Kartoshka fri": 1,
+                "🥤 Sprite": 1,
+                "🥤 Fanta": 1,
+                "🥤 Cola": 1,
+                "🍕 Pizza": 1,
+                "🌯 Lavash": 1,
+                "🍔 Classic Burger": 1
+            },
+            "total": 186000,
+            "id": 24,
+            "status": "Bekor qilindi"
+        },
+        {
+            "name": "xzzz",
+            "phone": "7777",
+            "address": "GPS: 40.6001735, 72.71475001666666",
+            "note": "",
+            "latitude": 40.6001735,
+            "longitude": 72.71475001666666,
+            "items": {
+                "🥤 Sprite": 1,
+                "🥤 Fanta": 1,
+                "🍕 Pizza": 1,
+                "🍔 Classic Burger": 1
+            },
+            "total": 109000,
+            "id": 25,
+            "status": "Yo‘lda"
+        },
+        {
+            "name": "aggaga",
+            "phone": "464646",
+            "address": "GPS: 40.60046641666667, 72.715995",
+            "note": "",
+            "latitude": 40.60046641666667,
+            "longitude": 72.715995,
+            "items": {
+                "🌯 Lavash": 1
+            },
+            "total": 35000,
+            "id": 26,
+            "status": "Yetkazildi"
+        },
+        {
+            "name": "Courier Test",
+            "phone": "999999999",
+            "address": "Andijon",
+            "items": {
+                "Classic Burger": 1
+            },
+            "total": 25000,
+            "id": 27,
+            "status": "Yo‘lda",
+            "courier_id": 1
+        }
+    ],
+    "couriers": [
+        {
+            "id": 1,
+            "name": "Ulugbek",
+            "phone": "942167715",
+            "online": true,
+            "balance": 0,
+            "completed_orders": 0
+        },
+        {
+            "id": 2,
+            "name": "Test Courier 2",
+            "phone": "900000002",
+            "online": true,
+            "balance": 0,
+            "completed_orders": 0
+        }
+    ]
+}

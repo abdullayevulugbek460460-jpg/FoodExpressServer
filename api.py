@@ -340,6 +340,76 @@ def courier_login():
     }), 401
 
 
+@app.route("/courier/change-password", methods=["POST"])
+def courier_change_password():
+    data = load_data()
+    req = request.get_json(silent=True) or {}
+
+    courier_id = req.get("courier_id")
+    old_password = str(req.get("old_password", ""))
+    new_login = str(req.get("new_login", "")).strip()
+    new_password = str(req.get("new_password", ""))
+
+    if not courier_id or not old_password or not new_login or not new_password:
+        return jsonify({
+            "success": False,
+            "message": "Barcha maydonlarni kiriting"
+        }), 400
+
+    if len(new_password) < 4:
+        return jsonify({
+            "success": False,
+            "message": "Yangi parol kamida 4 ta belgidan iborat bo‘lishi kerak"
+        }), 400
+
+    old_hash = hashlib.sha256(
+        old_password.encode("utf-8")
+    ).hexdigest()
+
+    new_hash = hashlib.sha256(
+        new_password.encode("utf-8")
+    ).hexdigest()
+
+    couriers = data.get("couriers", [])
+
+    target = None
+
+    for courier in couriers:
+        if int(courier.get("id", 0)) == int(courier_id):
+            target = courier
+            break
+
+    if target is None:
+        return jsonify({
+            "success": False,
+            "message": "Kuryer topilmadi"
+        }), 404
+
+    if target.get("password_hash") != old_hash:
+        return jsonify({
+            "success": False,
+            "message": "Eski parol noto‘g‘ri"
+        }), 401
+
+    for courier in couriers:
+        if int(courier.get("id", 0)) != int(courier_id):
+            if str(courier.get("login", "")).strip() == new_login:
+                return jsonify({
+                    "success": False,
+                    "message": "Bu login band"
+                }), 409
+
+    target["login"] = new_login
+    target["password_hash"] = new_hash
+
+    save_data(data)
+
+    return jsonify({
+        "success": True,
+        "message": "Login va parol muvaffaqiyatli o‘zgartirildi"
+    })
+
+
 @app.route("/courier/<int:courier_id>/online", methods=["POST"])
 def courier_online(courier_id):
 

@@ -9,7 +9,7 @@ from database import (
     get_courier_commission,
     set_courier_commission
 )
-from config import PORT
+from config import PORT, ADMIN_API_KEY
 
 app = Flask(__name__)
 CORS(app)
@@ -408,6 +408,91 @@ def courier_change_password():
         "success": True,
         "message": "Login va parol muvaffaqiyatli o‘zgartirildi"
     })
+
+# =====================================================
+# ADMIN - COURIER LOGIN / PASSWORD
+# =====================================================
+
+@app.route("/admin/courier/change-password", methods=["POST"])
+def admin_courier_change_password():
+
+    admin_key = request.headers.get("X-Admin-Key", "")
+
+    if not ADMIN_API_KEY or admin_key != ADMIN_API_KEY:
+        return jsonify({
+            "success": False,
+            "message": "Admin ruxsati rad etildi"
+        }), 401
+
+    data = load_data()
+    req = request.get_json(silent=True) or {}
+
+    courier_id = req.get("courier_id")
+    new_login = str(
+        req.get("new_login", "")
+    ).strip()
+
+    new_password = str(
+        req.get("new_password", "")
+    )
+
+    if not courier_id or not new_login or not new_password:
+        return jsonify({
+            "success": False,
+            "message": "Kuryer ID, yangi login va yangi parol kerak"
+        }), 400
+
+    if len(new_password) < 4:
+        return jsonify({
+            "success": False,
+            "message": "Parol kamida 4 ta belgidan iborat bo‘lsin"
+        }), 400
+
+    try:
+        courier_id = int(courier_id)
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "message": "Kuryer ID noto‘g‘ri"
+        }), 400
+
+    couriers = data.get("couriers", [])
+
+    target = None
+
+    for courier in couriers:
+        if int(courier.get("id", 0)) == courier_id:
+            target = courier
+            break
+
+    if target is None:
+        return jsonify({
+            "success": False,
+            "message": "Kuryer topilmadi"
+        }), 404
+
+    for courier in couriers:
+        if int(courier.get("id", 0)) != courier_id:
+            if str(
+                courier.get("login", "")
+            ).strip().lower() == new_login.lower():
+                return jsonify({
+                    "success": False,
+                    "message": "Bu login allaqachon ishlatilmoqda"
+                }), 409
+
+    target["login"] = new_login
+
+    target["password_hash"] = hashlib.sha256(
+        new_password.encode("utf-8")
+    ).hexdigest()
+
+    save_data(data)
+
+    return jsonify({
+        "success": True,
+        "message": "Kuryer login va paroli muvaffaqiyatli o‘zgartirildi"
+    }), 200
 
 
 @app.route("/courier/<int:courier_id>/online", methods=["POST"])

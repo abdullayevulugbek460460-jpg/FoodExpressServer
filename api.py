@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 import os
+import hashlib
 from flask_cors import CORS
 from database import (
     load_data,
@@ -201,13 +202,13 @@ def delete_menu_item(item_id):
 
 @app.route("/courier/register", methods=["POST"])
 def courier_register():
-
     data = load_data()
-
     req = request.get_json(silent=True) or {}
 
     name = str(req.get("name", "")).strip()
     phone = str(req.get("phone", "")).strip()
+    login = str(req.get("login", "")).strip()
+    password = str(req.get("password", ""))
 
     if not name:
         return jsonify({
@@ -221,26 +222,55 @@ def courier_register():
             "message": "Telefon raqam kerak"
         }), 400
 
+    if not login:
+        return jsonify({
+            "success": False,
+            "message": "Login kerak"
+        }), 400
+
+    if not password:
+        return jsonify({
+            "success": False,
+            "message": "Parol kerak"
+        }), 400
+
+    if len(password) < 4:
+        return jsonify({
+            "success": False,
+            "message": "Parol kamida 4 ta belgidan iborat bo'lishi kerak"
+        }), 400
+
     couriers = data.setdefault("couriers", [])
 
     for courier in couriers:
 
         if courier.get("phone") == phone:
-
             return jsonify({
-                "success": True,
-                "message": "Kuryer mavjud",
+                "success": False,
+                "message": "Bu telefon raqam bilan kuryer mavjud",
                 "courier": courier
-            })
+            }), 409
+
+        if str(courier.get("login", "")).strip() == login:
+            return jsonify({
+                "success": False,
+                "message": "Bu login band"
+            }), 409
 
     new_id = max(
         [int(c.get("id", 0)) for c in couriers] or [0]
     ) + 1
 
+    password_hash = hashlib.sha256(
+        password.encode("utf-8")
+    ).hexdigest()
+
     courier = {
         "id": new_id,
         "name": name,
         "phone": phone,
+        "login": login,
+        "password_hash": password_hash,
         "online": False,
         "balance": 0,
         "completed_orders": 0
@@ -253,8 +283,61 @@ def courier_register():
     return jsonify({
         "success": True,
         "message": "Kuryer ro'yxatdan o'tdi",
-        "courier": courier
+        "courier": {
+            "id": courier["id"],
+            "name": courier["name"],
+            "phone": courier["phone"],
+            "login": courier["login"],
+            "online": courier["online"],
+            "balance": courier["balance"],
+            "completed_orders": courier["completed_orders"]
+        }
     }), 201
+
+
+@app.route("/courier/login", methods=["POST"])
+def courier_login():
+    data = load_data()
+    req = request.get_json(silent=True) or {}
+
+    login = str(req.get("login", "")).strip()
+    password = str(req.get("password", ""))
+
+    if not login or not password:
+        return jsonify({
+            "success": False,
+            "message": "Login va parol kerak"
+        }), 400
+
+    password_hash = hashlib.sha256(
+        password.encode("utf-8")
+    ).hexdigest()
+
+    for courier in data.get("couriers", []):
+        if str(courier.get("login", "")).strip() == login:
+            if courier.get("password_hash") != password_hash:
+                return jsonify({
+                    "success": False,
+                    "message": "Login yoki parol noto‘g‘ri"
+                }), 401
+
+            return jsonify({
+                "success": True,
+                "message": "Kirish muvaffaqiyatli",
+                "courier": {
+                    "id": courier.get("id", 0),
+                    "name": courier.get("name", ""),
+                    "phone": courier.get("phone", ""),
+                    "online": courier.get("online", False),
+                    "balance": courier.get("balance", 0),
+                    "completed_orders": courier.get("completed_orders", 0)
+                }
+            })
+
+    return jsonify({
+        "success": False,
+        "message": "Login yoki parol noto‘g‘ri"
+    }), 401
 
 
 @app.route("/courier/<int:courier_id>/online", methods=["POST"])

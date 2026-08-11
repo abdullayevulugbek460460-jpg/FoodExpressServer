@@ -67,6 +67,17 @@ def init_db():
             )
         """)
 
+        # COURIER LOGIN FIELDS
+        cur.execute("""
+            ALTER TABLE couriers
+            ADD COLUMN IF NOT EXISTS login TEXT UNIQUE
+        """)
+
+        cur.execute("""
+            ALTER TABLE couriers
+            ADD COLUMN IF NOT EXISTS password_hash TEXT
+        """)
+
         conn.commit()
         cur.close()
 
@@ -262,6 +273,8 @@ def load_data():
                 id,
                 name,
                 phone,
+                login,
+                password_hash,
                 online,
                 balance,
                 completed_orders
@@ -274,9 +287,11 @@ def load_data():
                 "id": row[0],
                 "name": row[1],
                 "phone": row[2],
-                "online": row[3],
-                "balance": row[4],
-                "completed_orders": row[5]
+                "login": row[3],
+                "password_hash": row[4],
+                "online": row[5],
+                "balance": row[6],
+                "completed_orders": row[7]
             }
             for row in cur.fetchall()
         ]
@@ -370,11 +385,15 @@ def save_data(data):
                     id,
                     name,
                     phone,
+                    login,
+                    password_hash,
                     online,
                     balance,
                     completed_orders
                 )
                 VALUES (
+                    %s,
+                    %s,
                     %s,
                     %s,
                     %s,
@@ -386,6 +405,8 @@ def save_data(data):
                 DO UPDATE SET
                     name = EXCLUDED.name,
                     phone = EXCLUDED.phone,
+                    login = EXCLUDED.login,
+                    password_hash = EXCLUDED.password_hash,
                     online = EXCLUDED.online,
                     balance = EXCLUDED.balance,
                     completed_orders =
@@ -394,6 +415,8 @@ def save_data(data):
                 int(courier["id"]),
                 str(courier["name"]),
                 str(courier["phone"]),
+                courier.get("login"),
+                courier.get("password_hash"),
                 bool(courier.get("online", False)),
                 int(courier.get("balance", 0)),
                 int(
